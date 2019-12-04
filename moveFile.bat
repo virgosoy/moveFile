@@ -6,6 +6,10 @@ Title 这是一个标题
 @echo - 你好 -
 @echo --------
 
+choice /c YN /M "是否保留目录层级？若选择N则所有文件都在同一个文件夹内"
+if errorlevel==1 ( set keepLevel=Y )
+if errorlevel==2 ( set keepLevel=N )
+
 choice /c YN /M "已经准备好要开始了吗？"
 if errorlevel==2 ( goto doEnd )
 if errorlevel==1 ( goto doRun )
@@ -21,12 +25,20 @@ echo ======程序开始====== >> result.txt
 for /f "delims=" %%i in (filePath.txt) do (
 	set origin=%%i
 	set originDir=%%~dpi
+	set originName=%%~nxi
+	echo %%~nxi
+	
 	if not exist %%i (
 		echo ●文件不存在："%%i"
 		echo ●文件不存在："%%i" >> result.txt
 	) else (
-		set target=%bakDir%!origin::=!
-		set targetDir=%bakDir%!originDir::=!
+		if %keepLevel%==Y (
+			set target=%bakDir%!origin::=!
+			set targetDir=%bakDir%!originDir::=!
+		) else (
+			set target=%bakDir%!originName!
+			set targetDir=%bakDir%
+		)
 		::复制文件
 		rem echo f | xcopy !origin! !target! /F
 		::创建目录
